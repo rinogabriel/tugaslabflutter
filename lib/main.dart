@@ -1,76 +1,113 @@
 import 'package:flutter/material.dart';
 import 'first_screen.dart';
-import 'second_screen.dart';
-import 'third_screen.dart';
+import 'second_screen.dart'; 
+import 'third_screen.dart'; 
 
 void main() {
   runApp(MaterialApp(
-    title: 'Navigation Codelab',
+    title: 'Screen Selection',
     theme: ThemeData(
       primarySwatch: Colors.blue,
     ),
-    initialRoute: '/',
-    routes: {
-      '/': (context) => MyBottomNavigationBar(),
-      '/first': (context) => FirstScreen(),
-      '/second': (context) => SecondScreen(),
-      '/third': (context) => ThirdScreen(),
-    },
+    home: ScreenSelection(),
   ));
 }
 
-class MyBottomNavigationBar extends StatefulWidget {
+class ScreenSelection extends StatefulWidget {
   @override
-  _MyBottomNavigationBarState createState() => _MyBottomNavigationBarState();
+  _ScreenSelectionState createState() => _ScreenSelectionState();
 }
 
-class _MyBottomNavigationBarState extends State<MyBottomNavigationBar> {
-  int _currentIndex = 0;
+class _ScreenSelectionState extends State<ScreenSelection> {
+  int _selectedScreen = 0;
+  List<Widget> screens = [];
+  TextEditingController _controller = TextEditingController();
 
-  final List<Widget> _screens = [
-    FirstScreen(),
-    SecondScreen(),
-    ThirdScreen(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _generateScreens(3); // menambahkan 3 layar yang sudah ada
+  }
+
+  void _generateScreens(int number) {
+    screens.clear();
+    for (int i = 0; i < number; i++) {
+      if (i == 1) {
+        screens.add(SecondScreen()); // menambahkan screen kedua 
+      } else if (i == 2) {
+        screens.add(ThirdScreen()); // menambahkan screen ketiga
+      } else {
+        screens.add(FirstScreen()); // menambahkan screen pertama
+      }
+    }
+    setState(() {}); // mentriger widget
+  }
+
+  void _navigateToSelectedScreen() {
+    if (_selectedScreen >= 0 && _selectedScreen < screens.length) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => screens[_selectedScreen],
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-
-          // Use Navigator to navigate to the appropriate route based on the index.
-          switch (index) {
-            case 0:
-              Navigator.pushNamed(context, '/first');
-              break;
-            case 1:
-              Navigator.pushNamed(context, '/second');
-              break;
-            case 2:
-              Navigator.pushNamed(context, '/third');
-              break;
-          }
-        },
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'First',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.business),
-            label: 'Second',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.school),
-            label: 'Third',
-          ),
-        ],
+      appBar: AppBar(
+        title: Text('Screen Generator'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            TextFormField(
+              controller: _controller,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: 'Masukan Berapa Screen Untuk Di Generate',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                int number = int.tryParse(_controller.text) ?? 0;
+                _generateScreens(number);
+              },
+              child: Text('Buat Screen'),
+            ),
+            SizedBox(height: 16),
+            if (screens.isNotEmpty)
+              DropdownButton<int>(
+                value: _selectedScreen,
+                items: List.generate(
+                  screens.length,
+                  (index) {
+                    return DropdownMenuItem(
+                      value: index,
+                      child: Text('Screen $index'),
+                    );
+                  },
+                ),
+                onChanged: (int? newValue) {
+                  setState(() {
+                    _selectedScreen = newValue!;
+                  });
+                },
+              ),
+            SizedBox(height: 16),
+            if (screens.isNotEmpty)
+              ElevatedButton(
+                onPressed: _navigateToSelectedScreen,
+                child: Text('Masuk Ke Screen Yang Dipilih'),
+              ),
+          ],
+        ),
       ),
     );
   }
